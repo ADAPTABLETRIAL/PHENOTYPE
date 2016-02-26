@@ -335,7 +335,7 @@
         where
             cdm_dx.admit_date between &fromdt and &todt and
             cdm_dx.dx_type = "&codetype" and
-            cdm_dx.dx in (&codelist)
+            compress(cdm_dx.dx, '.') in (&codelist)
         order by cdm_dx.patid;
     quit;
 
@@ -355,7 +355,7 @@
         where
             cdm_px.px_date between &fromdt and &todt and
             cdm_px.px_type in (&codetype) and
-            cdm_px.px in (&codelist)
+            compress(cdm_px.px, '.') in (&codelist)
         order by cdm_px.patid;
     quit;
 
