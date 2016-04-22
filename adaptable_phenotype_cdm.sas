@@ -403,7 +403,14 @@
 
 %mend;
 
-%macro checkLab(outds, fromdt, todt, labname, labunit, valuecheck);
+%macro checkLab(outds, fromdt, todt, labname, labunit, valuetype, valuecheck);
+
+    %if %upcase(&valuetype) = QUAL %then
+        %let valuevar = result_qual;
+    %else %if %upcase(&valuetype) = NUM %then
+        %let valuevar = result_num;
+    %else
+        %put ERROR: Incorrect valuetype specified. Must be either QUAL or NUM.;
 
     %if %upcase(&has_lab_result_cm) = Y %then %do;
         proc sql;
@@ -414,7 +421,7 @@
                 cdm_lab.result_date between &fromdt and &todt and
                 cdm_lab.lab_name = "&labname" and
                 cdm_lab.result_unit = "&labunit" and
-                &valuecheck
+                &valuevar &valuecheck
             order by cdm_lab.patid;
         quit;
     %end;
@@ -788,6 +795,7 @@ libname outlib "&outlib";
         &rx_end_dt,
         CREATININE,
         %str(MG/DL),
+        NUM,
         %str(> 1.5)
     )
 
@@ -797,6 +805,7 @@ libname outlib "&outlib";
         &rx_end_dt,
         CREATININE,
         %str(IU),
+        NUM,
         %str(> 132.6)
     )
 
@@ -806,6 +815,7 @@ libname outlib "&outlib";
         &rx_end_dt,
         CREATININE,
         %str(UMOL/L),
+        NUM,
         %str(> 132.6)
     )
 
