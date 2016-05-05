@@ -63,6 +63,7 @@
 |           medApix         = "Medication/OAC: Apixaban [CDM basis]"                    |
 |           medEdox         = "Medication/OAC: Edoxaban [CDM basis]"                    |
 |           medTica         = "Medication: Ticagrelor [CDM basis]"                      |
+|           medACT          = "Medication: Long term use of anticoagulants [CDM basis]" |
 |           eligASCVD       = "Eligibility/ASCVD: Any [CDM basis]"                      |
 |           safetyIssue     = "Safety issue: Any [CDM basis]"                           |
 |           enrichFactor    = "Enrichment factor: Any [CDM basis]"                      |
@@ -306,6 +307,14 @@
 
 %let LVSD_I10_DX = %nrstr(
 'I5020', 'I5021', 'I5022', 'I5023', 'I5040', 'I5041', 'I5042', 'I5043'
+);
+
+%let ACT_I9_DX = %nrstr(
+'V5861'
+);
+
+%let ACT_I10_DX = %nrstr(
+'Z7901'
 );
 
 /*--------------------------------------------------------------------------------------\
@@ -788,6 +797,23 @@ libname outlib "&outlib";
         %str(&tica_cui)
     )
 
+    /* Medication: Long term use of anticoagulants */
+    %checkDx(
+        medACT_I9Dx,
+        &rx_start_dt,
+        &rx_end_dt,
+        09,
+        %str(&act_i9_dx)
+    )
+
+    %checkDx(
+        medACT_I10Dx,
+        &rx_start_dt,
+        &rx_end_dt,
+        10,
+        %str(&act_i10_dx)
+    )
+
     /* Enrichment criteria: Creatinine > 1.5 mg/dL */
     %checkLab(
         enrichCreat_MG,
@@ -869,6 +895,8 @@ libname outlib "&outlib";
 			medEdoxaban_CUI (in = _medEdox)
 			medTicagrelor_NDC (in = _medTica)
 			medTicagrelor_CUI (in = _medTica)
+            medACT_I9Dx (in = _medACT)
+            medACT_I10Dx (in = _medACT)
 			enrichAge65 (in = _enrichAge65)
 			enrichDiab_I9 (in = _enrichDiab)
 			enrichDiab_I10 (in = _enrichDiab)
@@ -906,6 +934,7 @@ libname outlib "&outlib";
         medApix = _medApix;
         medEdox = _medEdox;
         medTica = _medTica;
+        medACT = _medACT;
         enrichSmoker = _enrichSmoker;
 
         /* Define top-level criteria categories */
@@ -936,7 +965,8 @@ libname outlib "&outlib";
 			medRiva or
 			medApix or
 			medEdox or
-			medTica
+			medTica or
+            medACT
         );
 
         /* Set preliminary eligibility flag */
@@ -982,6 +1012,7 @@ libname outlib "&outlib";
             medApix = "Medication/OAC: Apixaban [CDM basis]"
             medEdox = "Medication/OAC: Edoxaban [CDM basis]"
             medTica = "Medication: Ticagrelor [CDM basis]"
+            medACT = "Medication: Long term use of anticoagulants [CDM basis]"
             eligASCVD = "Eligibility/ASCVD: Any [CDM basis]"
             safetyIssue = "Safety issue: Any [CDM basis]"
             enrichFactor = "Enrichment factor: Any [CDM basis]"
