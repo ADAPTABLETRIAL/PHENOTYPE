@@ -865,47 +865,47 @@ libname outlib "&outlib";
     data outlib.adaptable_prelim;
         merge
             refPop (in = _refPop)
-			died (in = _died)
-			eligAge18 (in = _eligAge18)
-			eligPriorMI_I9 (in = _eligPriorMI)
-			eligPriorMI_I10 (in = _eligPriorMI)
-			eligPriorPCI_I9Dx (in = _eligPriorPCI)
-			eligPriorPCI_I10Dx (in = _eligPriorPCI)
-			eligPriorPCI_I9Px (in = _eligPriorPCI)
-			eligPriorPCI_I10Px (in = _eligPriorPCI)
-			eligPriorPCI_C4HC (in = _eligPriorPCI)
-			eligPriorCABG_I9Dx (in = _eligPriorCABG)
-			eligPriorCABG_I10Dx (in = _eligPriorCABG)
-			eligPriorCABG_I9Px (in = _eligPriorCABG)
-			eligPriorCABG_I10Px (in = _eligPriorCABG)
-			eligPriorCABG_C4HC (in = _eligPriorCABG)
-			safetyGIBleed_I9 (in = _safetyGIBleed)
-			safetyGIBleed_I10 (in = _safetyGIBleed)
-			safetyDisorder_I9 (in = _safetyDisorder)
-			safetyDisorder_I10 (in = _safetyDisorder)
-			medWarfarin_NDC (in = _medWarf)
-			medWarfarin_CUI (in = _medWarf)
-			medDabigatran_NDC (in = _medDabi)
-			medDabigatran_CUI (in = _medDabi)
-			medRivaroxaban_NDC (in = _medRiva)
-			medRivaroxaban_CUI (in = _medRiva)
-			medApixaban_NDC (in = _medApix)
-			medApixaban_CUI (in = _medApix)
-			medEdoxaban_NDC (in = _medEdox)
-			medEdoxaban_CUI (in = _medEdox)
-			medTicagrelor_NDC (in = _medTica)
-			medTicagrelor_CUI (in = _medTica)
+            died (in = _died)
+            eligAge18 (in = _eligAge18)
+            eligPriorMI_I9 (in = _eligPriorMI)
+            eligPriorMI_I10 (in = _eligPriorMI)
+            eligPriorPCI_I9Dx (in = _eligPriorPCI)
+            eligPriorPCI_I10Dx (in = _eligPriorPCI)
+            eligPriorPCI_I9Px (in = _eligPriorPCI)
+            eligPriorPCI_I10Px (in = _eligPriorPCI)
+            eligPriorPCI_C4HC (in = _eligPriorPCI)
+            eligPriorCABG_I9Dx (in = _eligPriorCABG)
+            eligPriorCABG_I10Dx (in = _eligPriorCABG)
+            eligPriorCABG_I9Px (in = _eligPriorCABG)
+            eligPriorCABG_I10Px (in = _eligPriorCABG)
+            eligPriorCABG_C4HC (in = _eligPriorCABG)
+            safetyGIBleed_I9 (in = _safetyGIBleed)
+            safetyGIBleed_I10 (in = _safetyGIBleed)
+            safetyDisorder_I9 (in = _safetyDisorder)
+            safetyDisorder_I10 (in = _safetyDisorder)
+            medWarfarin_NDC (in = _medWarf)
+            medWarfarin_CUI (in = _medWarf)
+            medDabigatran_NDC (in = _medDabi)
+            medDabigatran_CUI (in = _medDabi)
+            medRivaroxaban_NDC (in = _medRiva)
+            medRivaroxaban_CUI (in = _medRiva)
+            medApixaban_NDC (in = _medApix)
+            medApixaban_CUI (in = _medApix)
+            medEdoxaban_NDC (in = _medEdox)
+            medEdoxaban_CUI (in = _medEdox)
+            medTicagrelor_NDC (in = _medTica)
+            medTicagrelor_CUI (in = _medTica)
             medACT_I9Dx (in = _medACT)
             medACT_I10Dx (in = _medACT)
-			enrichAge65 (in = _enrichAge65)
-			enrichDiab_I9 (in = _enrichDiab)
-			enrichDiab_I10 (in = _enrichDiab)
-			enrichCVD_I9 (in = _enrichCVD)
-			enrichCVD_I10 (in = _enrichCVD)
-			enrichPAD_I9 (in = _enrichPAD)
-			enrichPAD_I10 (in = _enrichPAD)
-			enrichLVSD_I9 (in = _enrichLVSD)
-			enrichLVSD_I10 (in = _enrichLVSD)
+            enrichAge65 (in = _enrichAge65)
+            enrichDiab_I9 (in = _enrichDiab)
+            enrichDiab_I10 (in = _enrichDiab)
+            enrichCVD_I9 (in = _enrichCVD)
+            enrichCVD_I10 (in = _enrichCVD)
+            enrichPAD_I9 (in = _enrichPAD)
+            enrichPAD_I10 (in = _enrichPAD)
+            enrichLVSD_I9 (in = _enrichLVSD)
+            enrichLVSD_I10 (in = _enrichLVSD)
             enrichCreat_MG (in = _enrichCreat)
             enrichCreat_IU (in = _enrichCreat)
             enrichCreat_UMOL (in = _enrichCreat)
@@ -939,33 +939,33 @@ libname outlib "&outlib";
 
         /* Define top-level criteria categories */
         eligASCVD = (
-			eligPriorMI or
-			eligPriorPCI or
-			eligPriorCABG
+            eligPriorMI or
+            eligPriorPCI or
+            eligPriorCABG
         );
 
         safetyIssue = (
-			safetyGIBleed or
-			safetyDisorder
+            safetyGIBleed or
+            safetyDisorder
         );
 
         enrichFactor = (
-			enrichAge65 or
-			enrichDiab or
-			enrichCVD or
-			enrichPAD or
-			enrichLVSD or
+            enrichAge65 or
+            enrichDiab or
+            enrichCVD or
+            enrichPAD or
+            enrichLVSD or
             enrichCreat or
             enrichSmoker
         );
 
         medContra = (
-			medWarf or
-			medDabi or
-			medRiva or
-			medApix or
-			medEdox or
-			medTica or
+            medWarf or
+            medDabi or
+            medRiva or
+            medApix or
+            medEdox or
+            medTica or
             medACT
         );
 
