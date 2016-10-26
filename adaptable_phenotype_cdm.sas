@@ -1,7 +1,7 @@
 /*--------------------------------------------------------------------------------------\
 |    PROGRAM NAME     adaptable_phenotype_cdm.sas                                       |
-|    DATE             12/10/2015                                                        |
-|    VERSION          1.0                                                               |
+|    DATE             10/26/2016                                                        |
+|    VERSION          2.0 - reflects proposed protocol update                           |
 |                                                                                       |
 |---------------------------------------------------------------------------------------|
 |    PURPOSE  The purpose of this program is to identify patients who are potentially   |
@@ -48,15 +48,19 @@
 |           eligPriorMI     = "Eligibility/ASCVD: Prior MI [CDM basis]"                 |
 |           eligPriorPCI    = "Eligibility/ASCVD: Prior PCI [CDM basis]"                |
 |           eligPriorCABG   = "Eligibility/ASCVD: Prior CABG [CDM basis]"               |
+|           eligHxCAD       = "Eligibility/ASCVD: History of IHD/CAD [CDM basis]"       |
 |           safetyGIBleed   = "Safety issue: Recent GI bleed [CDM basis]"               |
 |           safetyDisorder  = "Safety issue: Bleeding disorder [CDM basis]"             |
-|           enrichAge65     = "Enrichment factor: Age > 65 years [CDM basis]"           |
+|           enrichAge65     = "Enrichment factor: Age >= 65 years [CDM basis]"          |
 |           enrichDiab      = "Enrichment factor: Diabetes [CDM basis]"                 |
 |           enrichCVD       = "Enrichment factor: Cerebrovascular dz [CDM basis]"       |
 |           enrichPAD       = "Enrichment factor: Peripheral arterial dz [CDM basis]"   |
 |           enrichLVSD      = "Enrichment factor: LVEF < 50% [CDM basis]"               |
-|           enrichCreat     = "Enrichment factor: Creatinine > 1.5 mg/dL [CDM basis]"   |
+|           enrichCreat     = "Enrichment factor: Creatinine >= 1.5 mg/dL [CDM basis]"  |
 |           enrichSmoker    = "Enrichment factor: Current smoker [CDM basis]"           |
+|           enrichCHF       = "Enrichment factor: Systolic or diastolic HF [CDM basis]" |
+|           enrichSBP       = "Enrichment factor: Systolic BP >= 140 mmHg [CDM basis]"  |
+|           enrichLDL       = "Enrichment factor: LDL >= 130 mg/dL [CDM basis]"         |
 |           medWarf         = "Medication/OAC: Warfarin [CDM basis]"                    |
 |           medDabi         = "Medication/OAC: Dabigatran [CDM basis]"                  |
 |           medRiva         = "Medication/OAC: Rivaroxaban [CDM basis]"                 |
@@ -132,6 +136,8 @@
 |       Used for ascertainment of medication use                                        |
 |    LAB_START_DT / LAB_END_DT                                                          |
 |       Used for ascertainment of lab results                                           |
+|    PRIORYR_START_DT / PRIORYR_END_DT                                                  |
+|       Used for ascertainment of enrichment criteria w/in prior 12 months              |
 |    AGE_ASOF_DT                                                                        |
 |       Date on which to calculate patient age                                          |
 \--------------------------------------------------------------------------------------*/
@@ -149,6 +155,9 @@
 
 %let LAB_START_DT = '01JUL2015'd;
 %let LAB_END_DT   = '31DEC2015'd;
+
+%let PRIORYR_START_DT = '01JAN2015'd;
+%let PRIORYR_END_DT   = '31DEC2015'd;
 
 %let AGE_ASOF_DT = '31DEC2015'd;
 
@@ -211,6 +220,14 @@
 
 %let CABG_I10_DX = %nrstr(
 'Z951'
+);
+
+%let CAD_I9_DX = %nrstr(
+'4110', '4111', '41181', '41189', '4130', '4139', '41400', '41401', '41402', '41403', '41404', '41405', '41406', '41407', '4142', '4143', '4144', '4148', '4149'
+);
+
+%let CAD_I10_DX = %nrstr(
+'I200', 'I208', 'I209', 'I240', 'I241', 'I248', 'I249', 'I2510', 'I25110', 'I25111', 'I25118', 'I25119', 'I255', 'I256', 'I25700', 'I25701', 'I25708', 'I25709', 'I25710', 'I25711', 'I25718', 'I25719', 'I25720', 'I25721', 'I25728', 'I25729', 'I25730', 'I25731', 'I25738', 'I25739', 'I25750', 'I25751', 'I25758', 'I25759', 'I25760', 'I25761', 'I25768', 'I25769', 'I25790', 'I25791', 'I25798', 'I25799', 'I25810', 'I25811', 'I25812', 'I2582', 'I2583', 'I2584', 'I2589', 'I259'
 );
 
 %let GIBLD_I9_DX = %nrstr(
@@ -317,6 +334,14 @@
 'Z7901'
 );
 
+%let CHF_I9_DX = %nrstr(
+'39891', '40201', '40211', '40291', '40401', '40403', '40411', '40413', '40491', '40493', '4280', '4281', '42820', '42821', '42822', '42823', '42830', '42831', '42832', '42833', '42840', '42841', '42842', '42843', '4289'
+);
+
+%let CHF_I10_DX = %nrstr(
+'I0981', 'I110', 'I130', 'I132', 'I501', 'I5020', 'I5021', 'I5022', 'I5023', 'I5030', 'I5031', 'I5032', 'I5033', 'I5040', 'I5041', 'I5042', 'I5043', 'I509'
+);
+
 /*--------------------------------------------------------------------------------------\
 |    CDM SELECTION MACROS                                                               |
 |                                                                                       |
@@ -353,7 +378,7 @@
 %macro checkPx(outds, fromdt, todt, codetype, codelist);
 
     %if &codetype = C4HC %then
-        %let codetype = %str("C4", "HC");
+        %let codetype = %str("C2", "C3", "C4", "HC", "H3");
     %else
         %let codetype = %str("&codetype");
 
@@ -499,11 +524,11 @@ libname outlib "&outlib";
         %str(>= 18)
     )
 
-    /* Enrichment factor: Age > 65 */
+    /* Enrichment factor: Age >= 65 */
     %checkAge(
         enrichAge65,
         &age_asof_dt,
-        %str(> 65)
+        %str(>= 65)
     )
 
     /* ASCVD criteria: Prior MI */
@@ -603,6 +628,23 @@ libname outlib "&outlib";
         &history_end_dt,
         C4HC,
         %str(&cabg_c4_hc)
+    )
+
+    /* ASCVD criteria: History of IHD/CAD */
+    %checkDx(
+        eligHxCAD_I9,
+        &history_start_dt,
+        &history_end_dt,
+        09,
+        %str(&cad_i9_dx)
+    )
+
+    %checkDx(
+        eligHxCAD_I10,
+        &history_start_dt,
+        &history_end_dt,
+        10,
+        %str(&cad_i10_dx)
     )
 
     /* Safety criteria: GI bleeding */
@@ -705,6 +747,23 @@ libname outlib "&outlib";
         &history_end_dt,
         10,
         %str(&lvsd_i10_dx)
+    )
+
+    /* Enrichment factor: Systolic or diastolic heart failure */
+    %checkDx(
+        enrichCHF_I9,
+        &history_start_dt,
+        &history_end_dt,
+        09,
+        %str(&chf_i9_dx)
+    )
+
+    %checkDx(
+        enrichCHF_I10,
+        &history_start_dt,
+        &history_end_dt,
+        10,
+        %str(&chf_i10_dx)
     )
 
     /* Medication: Warfarin */
@@ -814,7 +873,18 @@ libname outlib "&outlib";
         %str(&act_i10_dx)
     )
 
-    /* Enrichment criteria: Creatinine > 1.5 mg/dL */
+    /* Enrichment criteria: LDL >= 130 mg/dL */
+    %checkLab(
+        enrichLDL_MG,
+        &prioryr_start_dt,
+        &prioryr_end_dt,
+        LDL,
+        %str(MG/DL),
+        NUM,
+        %str(>= 130)
+    )
+
+    /* Enrichment criteria: Creatinine >= 1.5 mg/dL */
     %checkLab(
         enrichCreat_MG,
         &rx_start_dt,
@@ -822,7 +892,7 @@ libname outlib "&outlib";
         CREATININE,
         %str(MG/DL),
         NUM,
-        %str(> 1.5)
+        %str(>= 1.5)
     )
 
     %checkLab(
@@ -832,7 +902,7 @@ libname outlib "&outlib";
         CREATININE,
         %str(IU),
         NUM,
-        %str(> 132.6)
+        %str(>= 132.6)
     )
 
     %checkLab(
@@ -842,11 +912,11 @@ libname outlib "&outlib";
         CREATININE,
         %str(UMOL/L),
         NUM,
-        %str(> 132.6)
+        %str(>= 132.6)
     )
 
-    /* Enrichment factor: Smoking */
     %if %upcase(&has_vital) = Y %then %do;
+        /* Enrichment factor: Smoking */
         proc sql;
             create table enrichSmoker as
             select distinct cdm_vit.patid
@@ -854,12 +924,29 @@ libname outlib "&outlib";
             where cdm_vit.smoking in ('01', '02')
             order by cdm_vit.patid;
         quit;
+
+        /* Enrichment criteria: SPB >= 140 mmHg */
+        proc sql;
+            create table enrichSBP as
+            select distinct cdm_vit.patid
+            from cdm.vital cdm_vit
+            where
+                cdm_vit.systolic >= 130 and
+                cdm_vit.measure_date between &prioryr_start_dt and &prioryr_end_dt
+            order by cdm_vit.patid;
+        quit;
     %end;
     %else %do;
         data enrichSmoker;
             set empty;
         run;
+
+        data enrichSBP;
+            set empty;
+        run;
     %end;
+
+
 
     /* Merge all patient lists together and save output dataset */
     data outlib.adaptable_prelim;
@@ -879,6 +966,8 @@ libname outlib "&outlib";
             eligPriorCABG_I9Px (in = _eligPriorCABG)
             eligPriorCABG_I10Px (in = _eligPriorCABG)
             eligPriorCABG_C4HC (in = _eligPriorCABG)
+            eligHxCAD_I9 (in = _eligHxCAD)
+            eligHxCAD_I10 (in = _eligHxCAD)
             safetyGIBleed_I9 (in = _safetyGIBleed)
             safetyGIBleed_I10 (in = _safetyGIBleed)
             safetyDisorder_I9 (in = _safetyDisorder)
@@ -910,6 +999,10 @@ libname outlib "&outlib";
             enrichCreat_IU (in = _enrichCreat)
             enrichCreat_UMOL (in = _enrichCreat)
             enrichSmoker (in = _enrichSmoker)
+            enrichCHF_I9 (in = _enrichCHF)
+            enrichCHF_I10 (in = _enrichCHF)
+            enrichSBP (in = _enrichSBP)
+            enrichLDL_MG (in = _enrichLDL)
         ;
         by patid;
 
@@ -920,6 +1013,7 @@ libname outlib "&outlib";
         eligPriorMI = _eligPriorMI;
         eligPriorPCI = _eligPriorPCI;
         eligPriorCABG = _eligPriorCABG;
+        eligHxCAD = _eligHxCAD;
         safetyGIBleed = _safetyGIBleed;
         safetyDisorder = _safetyDisorder;
         enrichAge65 = _enrichAge65;
@@ -928,6 +1022,9 @@ libname outlib "&outlib";
         enrichPAD = _enrichPAD;
         enrichLVSD = _enrichLVSD;
         enrichCreat = _enrichCreat;
+        enrichCHF = _enrichCHF;
+        enrichSBP = _enrichSBP;
+        enrichLDL = _enrichLDL;
         medWarf = _medWarf;
         medDabi = _medDabi;
         medRiva = _medRiva;
@@ -941,7 +1038,8 @@ libname outlib "&outlib";
         eligASCVD = (
             eligPriorMI or
             eligPriorPCI or
-            eligPriorCABG
+            eligPriorCABG or
+            eligHxCAD
         );
 
         safetyIssue = (
@@ -956,7 +1054,10 @@ libname outlib "&outlib";
             enrichPAD or
             enrichLVSD or
             enrichCreat or
-            enrichSmoker
+            enrichSmoker or
+            enrichCHF or
+            enrichSBP or
+            enrichLDL
         );
 
         medContra = (
@@ -997,15 +1098,19 @@ libname outlib "&outlib";
             eligPriorMI = "Eligibility/ASCVD: Prior MI [CDM basis]"
             eligPriorPCI = "Eligibility/ASCVD: Prior PCI [CDM basis]"
             eligPriorCABG = "Eligibility/ASCVD: Prior CABG [CDM basis]"
+            eligHxCAD = "Eligibility/ASCVD: History of IHD/CAD [CDM basis]"
             safetyGIBleed = "Safety issue: Recent GI bleed [CDM basis]"
             safetyDisorder = "Safety issue: Bleeding disorder [CDM basis]"
-            enrichAge65 = "Enrichment factor: Age > 65 years [CDM basis]"
+            enrichAge65 = "Enrichment factor: Age >= 65 years [CDM basis]"
             enrichDiab = "Enrichment factor: Diabetes [CDM basis]"
             enrichCVD = "Enrichment factor: Cerebrovascular dz [CDM basis]"
             enrichPAD = "Enrichment factor: Peripheral arterial dz [CDM basis]"
             enrichLVSD = "Enrichment factor: LVEF < 50% [CDM basis]"
-            enrichCreat = "Enrichment factor: Creatinine > 1.5 mg/dL [CDM basis]"
+            enrichCreat = "Enrichment factor: Creatinine >= 1.5 mg/dL [CDM basis]"
             enrichSmoker = "Enrichment factor: Current smoker [CDM basis]"
+            enrichCHF = "Enrichment factor: Systolic or diastolic HF [CDM basis]"
+            enrichSBP = "Enrichment factor: Systolic BP >= 140 mmHg [CDM basis]"
+            enrichLDL = "Enrichment factor: LDL >= 130 mg/dL [CDM basis]"
             medWarf = "Medication/OAC: Warfarin [CDM basis]"
             medDabi = "Medication/OAC: Dabigatran [CDM basis]"
             medRiva = "Medication/OAC: Rivaroxaban [CDM basis]"
