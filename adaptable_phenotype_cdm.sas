@@ -931,7 +931,7 @@ libname outlib "&outlib";
             select distinct cdm_vit.patid
             from cdm.vital cdm_vit
             where
-                cdm_vit.systolic >= 130 and
+                cdm_vit.systolic >= 140 and
                 cdm_vit.measure_date between &prioryr_start_dt and &prioryr_end_dt
             order by cdm_vit.patid;
         quit;
