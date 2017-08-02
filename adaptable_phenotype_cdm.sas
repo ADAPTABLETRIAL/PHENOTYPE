@@ -1,7 +1,5 @@
 /*--------------------------------------------------------------------------------------\
 |    PROGRAM NAME     adaptable_phenotype_cdm.sas                                       |
-|    DATE             10/26/2016                                                        |
-|    VERSION          2.0 - reflects proposed protocol update                           |
 |                                                                                       |
 |---------------------------------------------------------------------------------------|
 |    PURPOSE  The purpose of this program is to identify patients who are potentially   |
@@ -378,7 +376,7 @@
 %macro checkPx(outds, fromdt, todt, codetype, codelist);
 
     %if &codetype = C4HC %then
-        %let codetype = %str("C2", "C3", "C4", "HC", "H3");
+        %let codetype = %str("C2", "C3", "C4", "HC", "H3", "CH");
     %else
         %let codetype = %str("&codetype");
 
